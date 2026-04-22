@@ -1,2 +1,698 @@
 <!DOCTYPE html>
-<html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>The Melon Bread</title><style>body{font-family:system-ui,sans-serif;background:#f8f3e8;color:#2d2d2d;display:flex;justify-content:center;padding:20px}.app{max-width:720px;width:100%;background:#fff;border-radius:24px;padding:24px;box-shadow:0 10px 30px rgba(0,0,0,.08)}button{padding:12px 18px;border:none;border-radius:14px;background:#6aa84f;color:#fff;margin:8px;cursor:pointer}.choices{display:grid;gap:10px}.small{font-size:.9em;color:#666}</style></head><body><div class='app'><div id='screen'></div></div><script>const state={score:0};const screen=document.getElementById('screen');function render(html){screen.innerHTML=html}function start(){render(`<h1>🍈 The Melon Bread</h1><p>メロンパンを知らない天才</p><button onclick='role()'>Start</button>`)}function role(){render(`<h2>あなたは誰？</h2><div class='choices'><button onclick='q1()'>企画者</button><button onclick='q1()'>開発者</button></div>`)}function q1(){render(`<h2>Scene1: 伝え方</h2><div class='choices'><button onclick='pick(2,q2)'>図で伝える</button><button onclick='pick(1,q2)'>口頭で伝える</button><button onclick='pick(0,q2)'>雑に送る</button></div>`)}function q2(){render(`<h2>Scene2: 確認</h2><div class='choices'><button onclick='pick(2,q3)'>確認する</button><button onclick='pick(1,q3)'>空気で察する</button><button onclick='pick(0,q3)'>そのまま進める</button></div>`)}function q3(){render(`<h2>Scene3: 発売前</h2><div class='choices'><button onclick='pick(2,end)'>テスト販売</button><button onclick='pick(1,end)'>全国展開</button><button onclick='pick(0,end)'>上司判断で出す</button></div>`)}function pick(v,next){state.score+=v;next()}function end(){let t,s;if(state.score>=5){t='END A: 伝説のヒット商品';s='🍈 私は伝説のヒット商品を生みました。結果が良ければ、誤解も才能になる。 #メロンパンゲーム'}else if(state.score>=3){t='END C: 地味に成功';s='🍈 静かに利益を出しました。派手じゃない成功は語られない。 #メロンパンゲーム'}else if(state.score>=1){t='END D: 何も起きない';s='🍈 誰も傷つかず、誰にも届かなかった。 #メロンパンゲーム'}else{t='END B: 炎上会議';s='🍈 私は戦犯になりました。同じ行動でも、失敗すると罪になる。 #メロンパンゲーム'}render(`<h2>${t}</h2><p class='small'>${s}</p><button onclick='shareText(${JSON.stringify('')})'>シェアする</button><button onclick='restart()'>もう一度</button>`);window.currentShare=s}function shareText(){navigator.clipboard.writeText(window.currentShare);alert('シェア文をコピーしました');}function restart(){state.score=0;start()}start();</script></body></html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Melon Bread / めろんぱん</title>
+  <style>
+    :root {
+      --bg: #f8f3e8;
+      --panel: #fffdf8;
+      --text: #2d2d2d;
+      --muted: #6b6b6b;
+      --accent: #6aa84f;
+      --accent-2: #d98c3f;
+      --shadow: 0 12px 30px rgba(0,0,0,.10);
+      --radius: 24px;
+      --button-radius: 16px;
+      --font-main: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --font-display: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: var(--font-main);
+      background:
+        radial-gradient(circle at top, rgba(255,255,255,.65), transparent 35%),
+        linear-gradient(180deg, var(--bg), color-mix(in srgb, var(--bg) 88%, #ffffff 12%));
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 24px;
+      transition: background .35s ease, color .35s ease;
+    }
+
+    body.theme-en {
+      --bg: #dff2ea;
+      --panel: #fffaf0;
+      --text: #21313c;
+      --muted: #5b6973;
+      --accent: #2ea58a;
+      --accent-2: #f29b4b;
+      --shadow: 0 14px 36px rgba(33,49,60,.14);
+      --radius: 28px;
+      --button-radius: 999px;
+      --font-display: "Trebuchet MS", "Arial Rounded MT Bold", Arial, sans-serif;
+    }
+
+    body.theme-ja {
+      --bg: #f7f1df;
+      --panel: #fffdf8;
+      --text: #40372f;
+      --muted: #7b7068;
+      --accent: #84b96f;
+      --accent-2: #e3a85a;
+      --shadow: 0 12px 28px rgba(64,55,47,.10);
+      --radius: 26px;
+      --button-radius: 20px;
+      --font-display: "Hiragino Maru Gothic ProN", "Yu Gothic", "Meiryo", sans-serif;
+    }
+
+    .app {
+      width: min(100%, 760px);
+      background: var(--panel);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 28px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .app::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,.35), transparent 35%);
+      pointer-events: none;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 18px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.65);
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: .04em;
+      border: 1px solid rgba(0,0,0,.05);
+    }
+
+    .lang-switch {
+      display: inline-flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .mini-btn {
+      border: 1px solid rgba(0,0,0,.08);
+      background: rgba(255,255,255,.82);
+      color: var(--text);
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: transform .15s ease, background .2s ease, border-color .2s ease;
+    }
+
+    .mini-btn:hover { transform: translateY(-1px); }
+    .mini-btn.active {
+      background: color-mix(in srgb, var(--accent) 14%, white 86%);
+      border-color: color-mix(in srgb, var(--accent) 36%, white 64%);
+    }
+
+    #screen {
+      position: relative;
+      z-index: 1;
+      animation: fadeIn .35s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .hero {
+      text-align: center;
+      padding: 12px 0 4px;
+    }
+
+    .logo-wrap {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+
+    .logo {
+      width: min(100%, 340px);
+      border-radius: 20px;
+      box-shadow: 0 10px 24px rgba(0,0,0,.08);
+      background: white;
+    }
+
+    .ja-logo-text {
+      font-family: var(--font-display);
+      font-size: clamp(34px, 6vw, 52px);
+      line-height: 1;
+      margin: 10px 0 6px;
+      color: var(--accent);
+      letter-spacing: .08em;
+    }
+
+    .title {
+      margin: 8px 0 10px;
+      font-family: var(--font-display);
+      font-size: clamp(28px, 4.4vw, 42px);
+      line-height: 1.15;
+    }
+
+    .subtitle {
+      margin: 0 auto;
+      max-width: 560px;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.8;
+    }
+
+    .choices {
+      display: grid;
+      gap: 12px;
+      margin-top: 22px;
+    }
+
+    .main-btn, .choice-btn, .secondary-btn {
+      appearance: none;
+      border: none;
+      cursor: pointer;
+      transition: transform .14s ease, box-shadow .2s ease, opacity .2s ease;
+      font-family: inherit;
+    }
+
+    .main-btn:hover, .choice-btn:hover, .secondary-btn:hover { transform: translateY(-1px); }
+    .main-btn:active, .choice-btn:active, .secondary-btn:active { transform: translateY(0); }
+
+    .main-btn {
+      background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 78%, white 22%), var(--accent));
+      color: white;
+      padding: 14px 24px;
+      border-radius: var(--button-radius);
+      font-size: 16px;
+      font-weight: 700;
+      box-shadow: 0 8px 20px color-mix(in srgb, var(--accent) 28%, transparent 72%);
+    }
+
+    .secondary-btn {
+      background: rgba(255,255,255,.72);
+      color: var(--text);
+      padding: 12px 18px;
+      border-radius: var(--button-radius);
+      border: 1px solid rgba(0,0,0,.08);
+      font-size: 14px;
+    }
+
+    .choice-btn {
+      width: 100%;
+      text-align: left;
+      background: rgba(255,255,255,.85);
+      color: var(--text);
+      padding: 16px 18px;
+      border-radius: 18px;
+      border: 1px solid rgba(0,0,0,.07);
+      box-shadow: 0 8px 18px rgba(0,0,0,.04);
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    .choice-btn .label {
+      font-weight: 700;
+      display: block;
+      margin-bottom: 3px;
+    }
+
+    .scene-tag, .ending-tag {
+      display: inline-block;
+      background: color-mix(in srgb, var(--accent) 16%, white 84%);
+      color: color-mix(in srgb, var(--accent) 78%, black 22%);
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .04em;
+      margin-bottom: 10px;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 24px;
+    }
+
+    .meta {
+      margin-top: 20px;
+      padding: 16px;
+      border-radius: 18px;
+      background: rgba(255,255,255,.72);
+      border: 1px dashed rgba(0,0,0,.08);
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    .share-box {
+      margin-top: 18px;
+      padding: 16px;
+      border-radius: 18px;
+      background: color-mix(in srgb, var(--accent) 8%, white 92%);
+      border: 1px solid color-mix(in srgb, var(--accent) 18%, white 82%);
+    }
+
+    .share-title {
+      font-weight: 700;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+
+    .share-text {
+      white-space: pre-wrap;
+      line-height: 1.8;
+      font-size: 14px;
+    }
+
+    .footer-note {
+      margin-top: 22px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    @media (max-width: 640px) {
+      .app { padding: 20px; }
+      .topbar { flex-direction: column; align-items: stretch; }
+      .lang-switch { justify-content: center; }
+      .badge { justify-content: center; }
+    }
+  </style>
+</head>
+<body class="theme-en">
+  <div class="app">
+    <div class="topbar">
+      <div class="badge" id="themeBadge">🍈 Retro Future Edition</div>
+      <div class="lang-switch">
+        <button class="mini-btn active" id="switchEn">🇺🇸 English</button>
+        <button class="mini-btn" id="switchJa">🇯🇵 日本語</button>
+      </div>
+    </div>
+    <div id="screen"></div>
+  </div>
+
+  <script>
+    const LOGO_DATA = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAA4QAAAOECAYAAAD5Tv87AAAACXBIWXMAAAsSAAALEgHS3X78AAAgAElEQVR4nO3df5BV9Z3/8dfMzd0g2GGDkA5bqKQFEx8yYh9Gaiw2w0qkUpY4g0K0iEwV5UQ0S6XQ2aikcNq1S2wQ3Zb1A1cZ1lmpWz0Q7Yg1T4bU2rCk0cTQsyS0GZrjYxVQ4QmQ2kKQv7x9x/f+6u9u7f3vO9z7n3mXvP8z7f4z3f+fGf5zvP+TnPec4REREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREREdHj6k5d1+8B8m8r6v7z5X2sLw2w1bNnT0qzv5S6bR2v5h2v1pKX9s1v0QwQm8J9V4Y1c7x2Hh9m8j3m9h7C6r3f6Yf3+6w0y9e3bN7b7vM7mQq6z7x7Fz7k2nN4r1nT3S5S3dS9T3m8q7y3sT4bF5m0s5JfQv1xv0D1x8Q7vRr3g0s7s3l8y7L6b9t4k5s7cY8m5m7r2v6e5Y5b8e7m1b5b7n2a7t5d6v9Y7o7y9e6y4N9HjW4d5Y9J2xX8Qk9P6bR4X6b9M7n1o8V4L+R2W9c5b6d7E5n8o6d7k8c6a5b7j8f7e8g5d9c7P7c8S+u6h7a8Y5b9Y4i8i8vQ0dERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERET0H7lXyP7u5u0m7n9m8u8R3d1n7X9P3vYb6m8a9j7N6m8R5Y8n6f8k6q8Q5U8k6X8R5T8j6W8Q5S8i6V8R5R8h6U8Q5Q8g6T8R5P8f6S8Q5O8e6R8R5N8d6Q8Q5M8c6P8R5L8b6O8Q5K8a6N8R5J8Z6M8Q5I8Y6L8R5H8X6K8Q5G8W6J8R5F8V6I8Q5E8U6H8R5D8T6G8Q5C8S6F8R5B8R6E8Q5A8Q6D8R49P0iIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIqL/0v8A8B3Cw0n1c5AAAAAASUVORK5CYII=";
+
+    const i18n = {
+      en: {
+        badge: "🍈 Retro Future Edition",
+        worldTitle: "Choose your world",
+        worldSub: "One misunderstanding, two interfaces. Pick the flavor of your experience.",
+        worldEn: "Retro Future Edition",
+        worldEnDesc: "A bright American retro-futuristic interface with a slightly ironic commercial tone.",
+        worldJa: "Soft Yuru Edition",
+        worldJaDesc: "A gentle Japanese interface with a loose and playful atmosphere.",
+        continue: "Continue",
+        back: "Back",
+        title: "The Melon Bread",
+        heading: "The genius who didn’t know melon bread",
+        subtitle: "A tiny branching story about misunderstanding, innovation, and the labels people attach after the result.",
+        start: "Start Game",
+        about: "About",
+        aboutText: "You will choose a role, make three decisions, and arrive at one of four endings. If the outcome is good, people may call it creativity. If not, they may call it failure.",
+        roleTag: "ROLE SELECT",
+        roleTitle: "Choose your role",
+        roles: [
+          { label: "Planner", desc: "You came up with the idea and passed it to development." },
+          { label: "Developer", desc: "You received the idea and turned it into a product." }
+        ],
+        sceneLabels: ["SCENE 1", "SCENE 2", "SCENE 3"],
+        sceneTitles: [
+          "How will you communicate the idea?",
+          "How will you handle ambiguity?",
+          "What happens before launch?"
+        ],
+        questions: [
+          [
+            { label: "Use a visual reference", desc: "You add an image and a brief note.", score: 2 },
+            { label: "Explain it verbally", desc: "You trust the shared context.", score: 1 },
+            { label: "Send a vague message", desc: "You assume the rest will be obvious.", score: 0 }
+          ],
+          [
+            { label: "Clarify the meaning", desc: "You ask what “melon bread” really refers to.", score: 2 },
+            { label: "Read the room", desc: "You rely on implication and momentum.", score: 1 },
+            { label: "Move ahead anyway", desc: "You decide speed matters more than certainty.", score: 0 }
+          ],
+          [
+            { label: "Test it in a small market", desc: "You learn before scaling.", score: 2 },
+            { label: "Launch broadly", desc: "You trust the unusual idea.", score: 1 },
+            { label: "Let management decide", desc: "The final call leaves your hands.", score: 0 }
+          ]
+        ],
+        endings: {
+          A: {
+            tag: "ENDING A",
+            title: "Legendary bestseller",
+            body: "The product becomes a surprise hit. Executives celebrate your ‘visionary creativity’ and turn the misunderstanding into a success story.",
+            share: "🍈 I turned a misunderstanding into a bestseller.\nSometimes success gets called genius.\n#TheMelonBread"
+          },
+          C: {
+            tag: "ENDING C",
+            title: "Quiet success",
+            body: "A smaller audience loves it. The product quietly earns money, but subtle success never gets a dramatic myth.",
+            share: "🍈 I achieved a quiet success.\nNot every good result becomes a legend.\n#TheMelonBread"
+          },
+          D: {
+            tag: "ENDING D",
+            title: "Nothing really happened",
+            body: "No scandal, no triumph, no myth. The market shrugs, and the meeting notes outlive the product.",
+            share: "🍈 Nothing went terribly wrong, and nothing really landed.\nSafety alone doesn’t make a story.\n#TheMelonBread"
+          },
+          B: {
+            tag: "ENDING B",
+            title: "Blamed in the meeting room",
+            body: "The same chain of choices now looks irresponsible. Everyone asks why nobody clarified the assumption earlier.",
+            share: "🍈 I became the one blamed in the meeting room.\nThe same action feels different when the result fails.\n#TheMelonBread"
+          }
+        },
+        shareTitle: "Share text",
+        shareButton: "Copy Share Text",
+        retry: "Play Again",
+        home: "Back to Title",
+        copied: "Share text copied to clipboard.",
+        footer: "A misunderstanding became a bestseller."
+      },
+      ja: {
+        badge: "🍈 ゆるUI版",
+        worldTitle: "どの世界で あそぶ？",
+        worldSub: "ひとつの誤解を、ふたつの見た目で。好きな空気を選んでください。",
+        worldEn: "レトロフューチャー版",
+        worldEnDesc: "アメリカの昔の広告っぽい、ちょっと皮肉な雰囲気のUIです。",
+        worldJa: "ゆるUI版",
+        worldJaDesc: "やさしくて少し脱力した、日本語向けのゆるい画面です。",
+        continue: "つづける",
+        back: "もどる",
+        title: "めろんぱん",
+        heading: "メロンパンをしらない天才",
+        subtitle: "ちいさなすれ違いが、ヒットにも炎上にもなる。そんな分岐のおはなしです。",
+        start: "はじめる",
+        about: "あそびかた",
+        aboutText: "役割を選んで、3つの場面で選択すると、4つの結末のどれかにたどり着きます。うまくいけば発想力、失敗すれば確認不足。そんな結果論を遊ぶゲームです。",
+        roleTag: "やくわり",
+        roleTitle: "だれになる？",
+        roles: [
+          { label: "きかくする人", desc: "アイデアを考えて、開発へ伝える人です。" },
+          { label: "つくる人", desc: "伝えられた内容を商品にする人です。" }
+        ],
+        sceneLabels: ["ばめん 1", "ばめん 2", "ばめん 3"],
+        sceneTitles: [
+          "どうやって つたえる？",
+          "あいまいさを どうする？",
+          "はつばいまえに どうする？"
+        ],
+        questions: [
+          [
+            { label: "図や見本をつける", desc: "画像や短いメモもそえておく。", score: 2 },
+            { label: "ことばで伝える", desc: "たぶん通じるだろうと思う。", score: 1 },
+            { label: "ざっくり送る", desc: "いそがしいので空気でなんとかする。", score: 0 }
+          ],
+          [
+            { label: "意味を確認する", desc: "“メロンパン”って何？をきく。", score: 2 },
+            { label: "空気で読む", desc: "たぶんこういうことだろうと進める。", score: 1 },
+            { label: "そのまま進める", desc: "スピード優先で確認はしない。", score: 0 }
+          ],
+          [
+            { label: "ためしに小さく出す", desc: "まず反応を見てから広げる。", score: 2 },
+            { label: "そのまま大きく出す", desc: "変だけど、いける気もする。", score: 1 },
+            { label: "上の判断にまかせる", desc: "最終判断はだれかにゆだねる。", score: 0 }
+          ]
+        ],
+        endings: {
+          A: {
+            tag: "けっか A",
+            title: "なぜか大ヒット！",
+            body: "予想外に話題になって売れました。あとから“固定観念をこわした発想”と語られます。",
+            share: "🍈 誤解からヒット商品が生まれました。\nうまくいくと、才能っぽく見えることがあります。\n#めろんぱんゲーム"
+          },
+          C: {
+            tag: "けっか C",
+            title: "じみだけど成功",
+            body: "一部の人にしっかり刺さって、静かに利益が出ました。でも地味な成功はあまり語られません。",
+            share: "🍈 静かにうまくいきました。\n派手じゃない成功は、伝説になりにくいです。\n#めろんぱんゲーム"
+          },
+          D: {
+            tag: "けっか D",
+            title: "なにも起きない",
+            body: "炎上もしないし、大ヒットもしない。議事録だけが丁寧に残ります。",
+            share: "🍈 だれも傷つかず、だれにも届きませんでした。\n安全だけでは物語にならないのかもしれません。\n#めろんぱんゲーム"
+          },
+          B: {
+            tag: "けっか B",
+            title: "会議でつめられた…",
+            body: "同じ選択でも、失敗したとたんに“なぜ確認しなかったのか”と責められます。",
+            share: "🍈 会議でつめられました。\n同じ行動でも、失敗すると罪っぽく見えます。\n#めろんぱんゲーム"
+          }
+        },
+        shareTitle: "シェア文",
+        shareButton: "結果をコピーする",
+        retry: "もういちど遊ぶ",
+        home: "タイトルにもどる",
+        copied: "シェア文をコピーしました。",
+        footer: "誤解がヒット商品になりました。"
+      }
+    };
+
+    const state = {
+      lang: 'en',
+      role: null,
+      score: 0,
+      scene: 0,
+      shareText: '',
+      screen: 'world'
+    };
+
+    const screenEl = document.getElementById('screen');
+    const themeBadge = document.getElementById('themeBadge');
+    const switchEn = document.getElementById('switchEn');
+    const switchJa = document.getElementById('switchJa');
+
+    function t() {
+      return i18n[state.lang];
+    }
+
+    function setLang(lang) {
+      state.lang = lang;
+      document.body.classList.remove('theme-en', 'theme-ja');
+      document.body.classList.add(lang === 'en' ? 'theme-en' : 'theme-ja');
+      themeBadge.textContent = t().badge;
+      switchEn.classList.toggle('active', lang === 'en');
+      switchJa.classList.toggle('active', lang === 'ja');
+      render();
+    }
+
+    function resetGame() {
+      state.role = null;
+      state.score = 0;
+      state.scene = 0;
+      state.shareText = '';
+    }
+
+    function goHome() {
+      resetGame();
+      state.screen = 'title';
+      render();
+    }
+
+    function renderWorldSelect() {
+      const copy = t();
+      screenEl.innerHTML = `
+        <div class="hero">
+          <div class="scene-tag">WORLD SELECT</div>
+          <h1 class="title">${copy.worldTitle}</h1>
+          <p class="subtitle">${copy.worldSub}</p>
+          <div class="choices">
+            <button class="choice-btn" onclick="pickWorld('en')">
+              <span class="label">🇺🇸 ${copy.worldEn}</span>
+              <span>${copy.worldEnDesc}</span>
+            </button>
+            <button class="choice-btn" onclick="pickWorld('ja')">
+              <span class="label">🇯🇵 ${copy.worldJa}</span>
+              <span>${copy.worldJaDesc}</span>
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderTitle() {
+      const copy = t();
+      const logoBlock = state.lang === 'en'
+        ? `<div class="logo-wrap"><img class="logo" src="${LOGO_DATA}" alt="The Melon Bread logo"></div>`
+        : `<div class="logo-wrap"><div><div class="ja-logo-text">めろんぱん</div><div style="color:var(--muted);text-align:center;font-size:13px;">ゆるUI edition</div></div></div>`;
+
+      screenEl.innerHTML = `
+        <div class="hero">
+          ${logoBlock}
+          <h1 class="title">${copy.heading}</h1>
+          <p class="subtitle">${copy.subtitle}</p>
+          <div class="actions">
+            <button class="main-btn" onclick="startGame()">${copy.start}</button>
+            <button class="secondary-btn" onclick="showAbout()">${copy.about}</button>
+          </div>
+          <div class="footer-note">${copy.footer}</div>
+        </div>
+      `;
+    }
+
+    function showAbout() {
+      const copy = t();
+      screenEl.innerHTML = `
+        <div>
+          <div class="scene-tag">ABOUT</div>
+          <h2 class="title" style="font-size:clamp(24px,4vw,34px)">${copy.about}</h2>
+          <p class="subtitle" style="max-width:none">${copy.aboutText}</p>
+          <div class="actions">
+            <button class="main-btn" onclick="startGame()">${copy.start}</button>
+            <button class="secondary-btn" onclick="renderTitle()">${copy.back}</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function startGame() {
+      resetGame();
+      state.screen = 'role';
+      renderRole();
+    }
+
+    function renderRole() {
+      const copy = t();
+      screenEl.innerHTML = `
+        <div>
+          <div class="scene-tag">${copy.roleTag}</div>
+          <h2 class="title" style="font-size:clamp(24px,4vw,34px)">${copy.roleTitle}</h2>
+          <div class="choices">
+            ${copy.roles.map((role, idx) => `
+              <button class="choice-btn" onclick="pickRole(${idx})">
+                <span class="label">${role.label}</span>
+                <span>${role.desc}</span>
+              </button>
+            `).join('')}
+          </div>
+          <div class="actions">
+            <button class="secondary-btn" onclick="renderTitle()">${copy.back}</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function pickRole(idx) {
+      state.role = idx;
+      state.scene = 0;
+      renderScene();
+    }
+
+    function renderScene() {
+      const copy = t();
+      const idx = state.scene;
+      const options = copy.questions[idx];
+      screenEl.innerHTML = `
+        <div>
+          <div class="scene-tag">${copy.sceneLabels[idx]}</div>
+          <h2 class="title" style="font-size:clamp(24px,4vw,34px)">${copy.sceneTitles[idx]}</h2>
+          <div class="choices">
+            ${options.map((item, optIdx) => `
+              <button class="choice-btn" onclick="pickChoice(${idx}, ${optIdx})">
+                <span class="label">${item.label}</span>
+                <span>${item.desc}</span>
+              </button>
+            `).join('')}
+          </div>
+          <div class="meta">
+            ${state.lang === 'en'
+              ? `Role selected: <strong>${copy.roles[state.role].label}</strong> · Your choices shape how the misunderstanding is interpreted.`
+              : `えらんだ役割: <strong>${copy.roles[state.role].label}</strong> ・ 同じ誤解でも、選び方しだいで評価が変わります。`}
+          </div>
+        </div>
+      `;
+    }
+
+    function pickChoice(sceneIdx, optionIdx) {
+      const option = t().questions[sceneIdx][optionIdx];
+      state.score += option.score;
+      if (state.scene < 2) {
+        state.scene += 1;
+        renderScene();
+      } else {
+        renderEnding();
+      }
+    }
+
+    function getEndingKey() {
+      if (state.score >= 5) return 'A';
+      if (state.score >= 3) return 'C';
+      if (state.score >= 1) return 'D';
+      return 'B';
+    }
+
+    function renderEnding() {
+      const copy = t();
+      const endingKey = getEndingKey();
+      const ending = copy.endings[endingKey];
+      state.shareText = ending.share;
+      screenEl.innerHTML = `
+        <div>
+          <div class="ending-tag">${ending.tag}</div>
+          <h2 class="title" style="font-size:clamp(26px,4.2vw,36px)">${ending.title}</h2>
+          <p class="subtitle" style="max-width:none">${ending.body}</p>
+          <div class="share-box">
+            <div class="share-title">${copy.shareTitle}</div>
+            <div class="share-text">${ending.share}</div>
+          </div>
+          <div class="actions">
+            <button class="main-btn" onclick="copyShare()">${copy.shareButton}</button>
+            <button class="secondary-btn" onclick="startGame()">${copy.retry}</button>
+            <button class="secondary-btn" onclick="goHome()">${copy.home}</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function copyShare() {
+      navigator.clipboard.writeText(state.shareText)
+        .then(() => alert(t().copied))
+        .catch(() => alert(state.shareText));
+    }
+
+    function pickWorld(lang) {
+      setLang(lang);
+      state.screen = 'title';
+      renderTitle();
+    }
+
+    function render() {
+      if (state.screen === 'world') return renderWorldSelect();
+      if (state.screen === 'title') return renderTitle();
+      if (state.screen === 'role') return renderRole();
+      renderTitle();
+    }
+
+    switchEn.addEventListener('click', () => setLang('en'));
+    switchJa.addEventListener('click', () => setLang('ja'));
+
+    renderWorldSelect();
+  </script>
+</body>
+</html>
