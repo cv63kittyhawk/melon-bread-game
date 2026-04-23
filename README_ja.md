@@ -66,7 +66,7 @@ melon-bread-game/
 
 📸 スクリーンショット
 
-公開後に追加してください。
+公開後に追加
 
 ![title](./assets/screenshot-title.png)
 ![ending](./assets/screenshot-ending.png)
@@ -93,7 +93,7 @@ melon-bread-game/
 
 📄 ライセンス
 
-MIT（または任意のライセンス）
+MIT
 
 ⸻
 
